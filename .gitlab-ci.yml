@@ -1,0 +1,24 @@
+stages:
+  - build-ee
+
+variables:
+  # Construct execution environment image name for this project 
+  EE_IMAGE_NAME: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/k3s-install-ee
+
+# Build the Ansible Execution Environment for installing K3s
+build-ee:
+  stage: build-ee
+  image: docker:cli
+  before_script:
+    # Install Python, pip, and ansible-builder
+    - apk add --no-cache python3 py3-pip
+    - pip install --break-system-packages ansible-builder
+
+    - cd ansible/execution-environment
+  script:
+    # Build execution environment image
+    - ansible-builder build -t ${EE_IMAGE_NAME}:${CI_COMMIT_SHA} --container-runtime docker
+    
+    # Push execution environment image to GitLab registry
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - docker push ${EE_IMAGE_NAME}:${CI_COMMIT_SHA}
