@@ -12,6 +12,8 @@ dependencies:
     package_pip: ansible-core>=2.15
   ansible_runner:
     package_pip: ansible-runner
+  system:
+    - openssh-clients
   galaxy:
     collections:
       # k3s-ansible v1.1.1

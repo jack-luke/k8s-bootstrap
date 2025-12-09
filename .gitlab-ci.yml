@@ -1,5 +1,7 @@
 stages:
   - build-ee
+  - install-k3s
+  - cleanup-ee
 
 variables:
   # Construct execution environment image name for this project 
@@ -10,15 +12,41 @@ build-ee:
   stage: build-ee
   image: docker:cli
   before_script:
-    # Install Python, pip, and ansible-builder
+    # Install Python, pip and ansible-builder
     - apk add --no-cache python3 py3-pip
     - pip install --break-system-packages ansible-builder
 
     - cd ansible/execution-environment
   script:
     # Build execution environment image
-    - ansible-builder build -t ${EE_IMAGE_NAME}:${CI_COMMIT_SHA} --container-runtime docker
+    - ansible-builder build -t ${EE_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA} --container-runtime docker
     
     # Push execution environment image to GitLab registry
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - docker push ${EE_IMAGE_NAME}:${CI_COMMIT_SHA}
+    - docker push ${EE_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
+
+# Install K3s using the Ansible Execution Environment previously built
+install-k3s:
+  stage: install-k3s
+  image: ${EE_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
+  variables:
+    ANSIBLE_HOST_KEY_CHECKING: "False"
+  before_script:
+    - cd ansible
+
+    # Base64 decode the Ansible inventory from its CI variable
+    - echo "$ANSIBLE_INVENTORY_B64" | base64 -d > inventory.yaml
+
+    # Base64 decode SSH key for the Ansible target host
+    - mkdir ~/.ssh
+    - echo "$SSH_KEY_B64" | base64 -d > ~/.ssh/id_rsa
+    - chmod 0600 ~/.ssh/id_rsa
+  script:
+    - ansible-playbook k3s.orchestration.site -i inventory.yaml --user ${ANSIBLE_USER}
+
+# Remove lingering image from local Docker host
+cleanup-ee:
+  stage: cleanup-ee
+  script:
+    - echo "Removing execution environment image '${EE_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}'..."
+    - docker rmi ${EE_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
