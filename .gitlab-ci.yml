@@ -1,16 +1,17 @@
 stages:
-  - build-ee
+  - build-exec-env
   - install-k3s
-  - cleanup-ee
+  - cleanup-exec-env
+
+default:
+  image: docker:29.1.2-cli-alpine3.23
 
 variables:
-  # Construct execution environment image name for this project 
-  EE_IMAGE_NAME: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/k3s-install-ee
+  EXEC_ENV_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/k3s-install-exec-env
 
 # Build the Ansible Execution Environment for installing K3s
-build-ee:
-  stage: build-ee
-  image: docker:cli
+build-exec-env:
+  stage: build-exec-env
   before_script:
     # Install Python, pip and ansible-builder
     - apk add --no-cache python3 py3-pip
@@ -19,16 +20,16 @@ build-ee:
     - cd ansible/execution-environment
   script:
     # Build execution environment image
-    - ansible-builder build -t ${EE_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA} --container-runtime docker
+    - ansible-builder build -t ${EXEC_ENV_IMAGE}:${CI_COMMIT_SHORT_SHA} --container-runtime docker
     
     # Push execution environment image to GitLab registry
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - docker push ${EE_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
+    - docker push ${EXEC_ENV_IMAGE}:${CI_COMMIT_SHORT_SHA}
 
 # Install K3s using the Ansible Execution Environment previously built
 install-k3s:
   stage: install-k3s
-  image: ${EE_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
+  image: ${EXEC_ENV_IMAGE}:${CI_COMMIT_SHORT_SHA}
   variables:
     ANSIBLE_HOST_KEY_CHECKING: "False"
   before_script:
@@ -42,11 +43,19 @@ install-k3s:
     - echo "$SSH_KEY_B64" | base64 -d > ~/.ssh/id_rsa
     - chmod 0600 ~/.ssh/id_rsa
   script:
+    # run k3s-ansible to install K3s
     - ansible-playbook k3s.orchestration.site -i inventory.yaml --user ${ANSIBLE_USER}
 
+    # k3s-ansible will not properly download the kubeconfig to control node, so export it manually
+    - ansible-playbook kubeconfig-export.yaml -i inventory.yaml --user ${ANSIBLE_USER}
+  artifacts:
+    access: none # do not permit downloading of the kuebconfig from the project
+    paths:
+      - ansible/.kube/config
+
 # Remove lingering image from local Docker host
-cleanup-ee:
-  stage: cleanup-ee
+cleanup-exec-env:
+  stage: cleanup-exec-env
   script:
-    - echo "Removing execution environment image '${EE_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}'..."
-    - docker rmi ${EE_IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}
+    - echo "Removing execution environment image '${EXEC_ENV_IMAGE}:${CI_COMMIT_SHORT_SHA}'..."
+    - docker rmi ${EXEC_ENV_IMAGE}:${CI_COMMIT_SHORT_SHA}
