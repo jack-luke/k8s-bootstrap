@@ -1,0 +1,5 @@
+k3s_cluster:
+  children:
+    server:
+      hosts:
+        rpi5-1:

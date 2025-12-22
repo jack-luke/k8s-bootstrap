@@ -49,9 +49,6 @@ install-k3s:
   before_script:
     - cd ansible
 
-    # Base64 decode the Ansible inventory from its CI variable
-    - echo "$ANSIBLE_INVENTORY_B64" | base64 -d > inventory.yaml
-
     # Base64 decode SSH key for the Ansible target host
     - mkdir ~/.ssh
     - echo "$SSH_KEY_B64" | base64 -d > ~/.ssh/id_rsa
@@ -102,3 +99,4 @@ install-flux:
       --from-literal=username=git
       --from-literal=password=${GITLAB_TOKEN}
       --from-file=gitlab.crt=gitlab.crt
+      --dry-run=client -o yaml | kubectl apply -f -
