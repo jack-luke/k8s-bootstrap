@@ -11,10 +11,9 @@ This project quickly became complex, with poor separation of responsibilities, a
 
 I wanted to migrate the app management to a GitOps-based method, and simutaneously use this opportunity to create a more professional setup, with better security and automation.
 
-## The Plan
-
+## Aims
 This project aims to create a configuration that:
 * Provisions a Kubernetes cluster with Ansible
-* Installs any core system services such as CNIs with Terraform
-* Installs ArgoCD, bootstraps it, and installs apps as described in their respective repositories.
+* Installs any core system services such as CNIs
+* Installs Flux and bootstraps it, ready to deploy apps in a GitOps manner
 * Carries out the above via a GitLab CI/CD pipeline 
