@@ -1,3 +1,6 @@
+# GitLab CI version: v0.0.1
+# Used to track image builds stored in GitLab project registry.
+
 version: 3
 
 images:
