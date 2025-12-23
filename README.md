@@ -19,10 +19,26 @@ This project aims to create a configuration that:
 * Carries out the above via a GitLab CI/CD pipeline 
 
 ## Prerequisites
-* A remote machine suitable for running Kubernetes, accessible over SSH.
-* A GitLab repository containing the Kubernetes manifests to be synced with the cluster (default path: clusters/homelab)
+* Remote machine/s suitable for running Kubernetes, accessible over SSH.
+* A Git repository containing the Kubernetes manifests to be synced with the cluster (default path: clusters/homelab)
 
-## Pipeline Configuration
+## Configuration
+### K3s Install
+[K3s Ansible](https://github.com/k3s-io/k3s-ansible) is used to install Kubernetes.
+
+`ansible/inventory.yaml` should be configured to include the addresses of the machines you intend to be the server and agent nodes of your cluster.
+`ansible/group_vars/k3s_cluster.yaml` should contain your desired k3s-ansible and K3s cluster configurations. 
+
+Further details can be found in [K3s Install README](ansible/README.md).
+
+### Flux Install
+Flux is installed to the cluster via the [Flux Operator](https://fluxoperator.dev/docs/), and syncs to an existing Git repository containing Kubernetes mainfests.
+
+`flux/flux-instance.yaml` should be configured to contain the details of the existing repository.
+
+Further details can be found in [Flux Install README](flux/README.md).
+
+### CI Pipeline Variables
 | Variable | Description |
 | --- | --- |
 | ANSIBLE_USER | Ansible User to login to the remote Kubernetes host with. |
