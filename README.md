@@ -1,22 +1,21 @@
 # k8s-bootstrap
 
-A project for provisioning a Kubernetes cluster with core platform services, and preparing for hosting GitOps-based applications.
+A GitLab CI pipeline that provisions a K3s Kubernetes cluster, and configured GitOps-based application deployment with Flux.
 
-## Motivation
+## Description
+This project consists of a GitLab CI pipeline that:
+* Provisions a K3s Kubernetes cluster with [K3s Ansible](https://github.com/k3s-io/k3s-ansible) inside an Ansible execution environment
+* Installs [Flux Operator](https://fluxoperator.dev/docs/) to the cluster
+* Configures Flux to sync with an existing Git repository containing manifests for the cluster applications and services.
 
-Previously, I had a project that used Terraform to install core services (such as CNIs) as well as apps onto Kubernetes clusters. 
-The configuration files for provisioning the Kubernetes cluster also lived in that project. 
+### Motivation
+Previously, I had managed my homelab cluster with a single repository that contained Ansible playbooks for installing K3s, and Terraform modules for installing Kubernetes services with the Kubernetes Terraform provider.
 
-This project quickly became complex, with poor separation of responsibilities, as well as problems with large Terraform state being constantly applied to update applications.
+As the homelab grew, I found that the large Terraform state made updating applications slow. 
+Furthermore, this system involved manually applying cluster & application state instead of using GitOps.
 
-I wanted to migrate the app management to a GitOps-based method, and simutaneously use this opportunity to create a more professional setup, with better security and automation.
-
-## Aims
-This project aims to create a configuration that:
-* Provisions a Kubernetes cluster with Ansible
-* Installs any core system services such as CNIs
-* Installs Flux and bootstraps it, ready to deploy apps in a GitOps manner
-* Carries out the above via a GitLab CI/CD pipeline 
+So, this project aims to solve these problems by migrating the installation of my homelab cluster and its applications to a GitLab CI pipeline.
+Additionally, the application state is managed in a GitOps manner in its own repository, for better portability and separation of responsibilities.
 
 ## Prerequisites
 * Remote machine/s suitable for running Kubernetes, accessible over SSH.
