@@ -98,5 +98,5 @@ install-flux:
       --namespace flux-system
       --from-literal=username=git
       --from-literal=password=${GITLAB_TOKEN}
-      --from-file=gitlab.crt=gitlab.crt
+      --from-file=ca.crt=gitlab.crt
       --dry-run=client -o yaml | kubectl apply -f -
