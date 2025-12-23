@@ -59,9 +59,6 @@ install-k3s:
 
     # k3s-ansible will not properly download the kubeconfig to control node, so export it manually
     - ansible-playbook kubeconfig-export.yaml -i inventory.yaml --user ${ANSIBLE_USER}
-    
-    # edit Kubeconfig permissions to allow Flux image to read it
-    - chmod 644 .kube/config
   artifacts:
     access: none # do not permit downloading of the kuebconfig from the project
     paths:
