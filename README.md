@@ -1,6 +1,6 @@
 # k8s-bootstrap
 
-A GitLab CI pipeline that provisions a K3s Kubernetes cluster, and configured GitOps-based application deployment with Flux.
+A GitLab CI pipeline that provisions a K3s Kubernetes cluster, and configures GitOps-based application deployment with Flux.
 
 ## Description
 This project consists of a GitLab CI pipeline that:
