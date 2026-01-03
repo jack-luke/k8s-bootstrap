@@ -3,6 +3,8 @@ kind: FluxInstance
 metadata:
   name: flux
   namespace: flux-system
+  annotations:
+    fluxcd.controlplane.io/reconcileArtifactEvery: "5m"
 spec:
   distribution:
     version: "2.7.5"
@@ -15,11 +17,9 @@ spec:
     - source-controller
     - kustomize-controller
     - helm-controller
-    - notification-controller
-    - image-reflector-controller
-    - image-automation-controller
     - source-watcher
   sync:
+    name: k8s-apps
     kind: GitRepository
     url: "https://rpi5-0:8929/jack-luke/k8s-apps.git"
     ref: "refs/heads/main"
