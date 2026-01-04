@@ -3,6 +3,7 @@ stages:
   - install-k3s
   - cleanup-exec-env
   - install-flux
+  - create-vault-tls-secret
 
 default:
   image: docker:29.1.2-cli-alpine3.23
@@ -96,4 +97,35 @@ install-flux:
       --from-literal=username=git
       --from-literal=password=${GITLAB_TOKEN}
       --from-file=ca.crt=gitlab.crt
+      --dry-run=client -o yaml | kubectl apply -f -
+
+# Create TLS secret for Vault, from which cluster-wide PKI can be set up
+# See: https://developer.hashicorp.com/vault/docs/deploy/kubernetes/helm/examples/standalone-tls#standalone-server-with-tls
+create-vault-tls-secret:
+  stage: create-vault-tls-secret
+  image: $HELM_KUBECTL_IMAGE
+  before_script:
+    - export KUBECONFIG=ansible/.kube/config
+
+    # Decode all certs for the TLS secret
+    - echo "$VAULT_SERVER_CERT_B64" | base64 -d > vault.crt
+    - echo "$VAULT_SERVER_KEY_B64" | base64 -d > vault.key
+    - echo "$VAULT_CA_B64" | base64 -d > vault.ca
+  script: 
+    # Create Vault namespace if it does not exist
+    - kubectl create namespace vault 
+      --dry-run=client -o yaml | kubectl apply -f -
+
+    # Create Vault TLS server secret
+    - kubectl create secret generic vault-server-tls
+      --namespace vault
+      --from-file=vault.crt=vault.crt
+      --from-file=vault.key=vault.key
+      --from-file=vault.ca=vault.ca
+      --dry-run=client -o yaml | kubectl apply -f -
+
+    # Create CA secret for Vault Secrets Operator to verify Vault server
+    - kubectl create secret generic vault-ca
+      --namespace vault
+      --from-file=ca.crt=vault.ca
       --dry-run=client -o yaml | kubectl apply -f -
