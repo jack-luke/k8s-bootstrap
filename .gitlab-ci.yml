@@ -100,7 +100,7 @@ install-flux:
       --dry-run=client -o yaml | kubectl apply -f -
 
 # Create TLS secret for Vault, from which cluster-wide PKI can be set up
-# See: https://developer.hashicorp.com/vault/docs/deploy/kubernetes/helm/examples/standalone-tls#standalone-server-with-tls
+# See: https://cert-manager.io/docs/configuration/vault/#accessing-a-vault-server-with-mtls-enforced
 create-vault-tls-secret:
   stage: create-vault-tls-secret
   image: $HELM_KUBECTL_IMAGE
