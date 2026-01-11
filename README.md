@@ -31,6 +31,11 @@ Additionally, the application state is managed in a GitOps manner in its own rep
 
 Further details can be found in [K3s Install README](ansible/README.md).
 
+### MetalLB Install
+Instead of the default ServiceLB LoadBalancer controller K3s includes, MetalLB is installed here.
+
+`metallb/lb-config.yaml` configures the IP pool that MetalLB can advertise as external IPs.
+
 ### Flux Install
 Flux is installed to the cluster via the [Flux Operator](https://fluxoperator.dev/docs/), and syncs to an existing Git repository containing Kubernetes mainfests.
 
@@ -55,6 +60,7 @@ server.
 | FLUX_OPERATOR_VERSION | Version of the Flux Operator to use. |
 | GITLAB_TOKEN | GitLab Personal Access Token for the Kubernetes manifests repository with `Maintainer` role and `api, read_api, read_repository, write_repository` permissions. This allows Flux to authenticate to GitLab to sync the repository. |
 | GITLAB_CERT_B64 | Base 64-encoded public certificate for the GitLab server, allowing Flux to verify the GitLab server certificate. |
+| METALLB_VERSION | Version of MetalLB Helm chart to install. |
 | VAULT_SERVER_CERT_B64 | Base 64-encoded public certificate for the Vault server to be deployed to the cluster. |
 | VAULT_SERVER_KEY_B64 | Base 64-encoded key certificate for the Vault server to be deployed to the cluster. |
 | VAULT_CA_B64 | Base 64-encoded CA certificate for the Vault server to be deployed to the cluster. |

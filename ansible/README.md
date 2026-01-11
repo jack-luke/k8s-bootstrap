@@ -27,6 +27,9 @@ ansible-builder build --container-runtime docker --tag k3s-install-ee:latest
 ## Configure
 The `group_vars/k3s_cluster.yaml` file contains variables that are applied to the whole cluster, including the server and agent configurations defined in [K3s Configuration File](https://docs.k3s.io/installation/configuration#configuration-file)
 
+The default Traefik ingress controller is disabled here (replaced by the Envoy Gateway controller).
+The default ServiceLB LoadBalancer controller is disabled here as well (replaced by MetalLB).
+
 ## Run 
 Once the execution envionment is built, it can be run by simply running the k3s install playbook inside the container:
 ```
