@@ -4,3 +4,4 @@ server_config_yaml: |
   secrets-encryption: true
   disable:
     - traefik
+    - servicelb

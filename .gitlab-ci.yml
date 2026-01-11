@@ -2,6 +2,7 @@ stages:
   - build-exec-env
   - install-k3s
   - cleanup-exec-env
+  - install-metallb
   - install-flux
   - create-vault-tls-secret
 
@@ -12,6 +13,7 @@ variables:
   EXEC_ENV_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/k3s-install-exec-env
   EXEC_ENV_TAG: v0.0.1
   HELM_KUBECTL_IMAGE: dtzar/helm-kubectl:4.0.4
+  METALLB_VERSION: 0.15.3
   FLUX_OPERATOR_VERSION: 0.38.1
 
 # Build the Ansible Execution Environment for installing K3s
@@ -72,6 +74,26 @@ cleanup-exec-env:
     - echo "Removing execution environment image '${EXEC_ENV_IMAGE}:${EXEC_ENV_TAG}'..."
     - docker rmi ${EXEC_ENV_IMAGE}:${EXEC_ENV_TAG}
 
+# Install MetalLB
+install-metallb:
+  stage: install-metallb
+  image: $HELM_KUBECTL_IMAGE
+  before_script:
+    - export KUBECONFIG=ansible/.kube/config
+  script:
+    # Add MetalLB repo
+    - helm repo add metallb https://metallb.github.io/metallb
+    - helm repo update
+
+    # Install MetalLB
+    - helm upgrade metallb metallb/metallb
+      --install
+      --version ${METALLB_VERSION}
+      --namespace metallb-system --create-namespace
+
+    # Configure LoadBalancer IPs
+    - kubectl apply -f metallb/lb-config.yaml
+
 # Install Flux Operator, a Flux Instance, and Git secret
 install-flux:
   stage: install-flux
@@ -125,7 +147,7 @@ create-vault-tls-secret:
       --dry-run=client -o yaml | kubectl apply -f -
 
     # Create CA secret for Vault Secrets Operator to verify Vault server
-    - kubectl create secret generic vault-ca
+    - kubectl create secret generic vault-server-ca
       --namespace vault
       --from-file=ca.crt=vault.ca
       --dry-run=client -o yaml | kubectl apply -f -
