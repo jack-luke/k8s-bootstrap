@@ -2,6 +2,7 @@ api_endpoint: "{{ hostvars[groups['server'][0]]['ansible_host'] | default(groups
 k3s_version: v1.35.0+k3s1
 server_config_yaml: | 
   secrets-encryption: true
+  flannel-backend: wireguard-native
   disable:
     - traefik
     - servicelb
