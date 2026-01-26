@@ -90,6 +90,7 @@ install-metallb:
       --install
       --version ${METALLB_VERSION}
       --namespace metallb-system --create-namespace
+      --wait
 
     # Configure LoadBalancer IPs
     - kubectl apply -f metallb/lb-config.yaml
