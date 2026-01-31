@@ -24,4 +24,4 @@ spec:
     url: "https://rpi5-0:8929/jack-luke/k8s-apps.git"
     ref: "refs/heads/main"
     path: "clusters/homelab"
-    pullSecret: "flux-system"
+    pullSecret: "gitlab-credentials"

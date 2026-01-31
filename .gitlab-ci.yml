@@ -7,14 +7,14 @@ stages:
   - create-vault-tls-secret
 
 default:
-  image: docker:29.1.2-cli-alpine3.23
+  image: docker:29.2.0-cli-alpine3.23
 
 variables:
   EXEC_ENV_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/k3s-install-exec-env
   EXEC_ENV_TAG: v0.0.1
   HELM_KUBECTL_IMAGE: dtzar/helm-kubectl:4.0.4
   METALLB_VERSION: 0.15.3
-  FLUX_OPERATOR_VERSION: 0.38.1
+  FLUX_OPERATOR_VERSION: 0.40.0
 
 # Build the Ansible Execution Environment for installing K3s
 build-exec-env:
@@ -115,7 +115,7 @@ install-flux:
     - kubectl apply -f flux/flux-instance.yaml
 
     # Create secret to store Git credentials
-    - kubectl create secret generic flux-system
+    - kubectl create secret generic gitlab-credentials
       --namespace flux-system
       --from-literal=username=git
       --from-literal=password=${GITLAB_TOKEN}
